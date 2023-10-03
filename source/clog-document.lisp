@@ -183,11 +183,11 @@ If LOAD-ONLY-ONCE is t first checks if previously loaded with load-script."))
                                                          (load-only-once t))
   (let ((loaded (connection-data-item obj (format nil "clog-~A" script-url))))
     (cond ((not (and load-only-once loaded))
-           (let ((sem (bordeaux-threads:make-semaphore)))
+           (let ((sem (bordeaux-threads-2:make-semaphore)))
              (flet ((on-load (obj url)
                       (declare (ignore obj))
                       (when (equalp url script-url)
-                        (bordeaux-threads:signal-semaphore sem))))
+                        (bordeaux-threads-2:signal-semaphore sem))))
                (when wait-for-load
                  (set-on-load-script obj #'on-load :one-time t))
                ;; After we load the script from src we then fire the
@@ -201,7 +201,7 @@ If LOAD-ONLY-ONCE is t first checks if previously loaded with load-script."))
                         (escape-string script-url)
                         (escape-string script-url)))
                (cond (load-only-once
-                      (when (bordeaux-threads:wait-on-semaphore
+                      (when (bordeaux-threads-2:wait-on-semaphore
                              sem :timeout wait-timeout)
                         (setf (connection-data-item obj (format nil "clog-~A"
                                                                 script-url)) t)

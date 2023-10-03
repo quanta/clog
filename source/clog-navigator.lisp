@@ -83,14 +83,14 @@
 
 (defmethod system-clipboard-read ((obj clog-obj) &key (wait-timeout 1))
   (let ((doc (html-document (connection-body obj)))
-        (sem (bordeaux-threads:make-semaphore))
+        (sem (bordeaux-threads-2:make-semaphore))
         ret)
     (flet ((on-data (obj data)
              (declare (ignore obj))
-             (bordeaux-threads:signal-semaphore sem)
+             (bordeaux-threads-2:signal-semaphore sem)
              (setf ret data)))
       (set-on-event-with-data doc "on-clip-data" #'on-data :one-time t)
       (js-execute obj "navigator.clipboard.readText().then(function(text) {~
                         $(clog['document']).trigger('on-clip-data', text)})")
-      (bordeaux-threads:wait-on-semaphore sem :timeout wait-timeout)
+      (bordeaux-threads-2:wait-on-semaphore sem :timeout wait-timeout)
       ret)))

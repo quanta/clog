@@ -57,7 +57,7 @@ the same as the clog directy this overides the relative paths used in them.")
           (progn
             (setf (connection-data-item body "clog-path") path)
             (setf (connection-data-item body "clog-body") body)
-            (setf (connection-data-item body "clog-sync") (bordeaux-threads:make-lock))
+            (setf (connection-data-item body "clog-sync") (bordeaux-threads-2:make-lock))
             (funcall on-new-window body))
           (put-br (html-document body) "No route to on-new-window")))))
 

@@ -173,7 +173,7 @@ hash test: #'equal."
 (defun prep-query (id default-answer)
   "Setup up a query to be received from a script identified by ID an returning
 with DEFAULT-ANSWER in case of a time out. (Private)"
-  (setf (gethash id *queries-sems*) (bordeaux-threads:make-semaphore))
+  (setf (gethash id *queries-sems*) (bordeaux-threads-2:make-semaphore))
   (setf (gethash id *queries*) default-answer))
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -185,7 +185,7 @@ with DEFAULT-ANSWER in case of a time out. (Private)"
 the default answer. (Private)"
   (handler-case
       (progn
-        (bordeaux-threads:wait-on-semaphore (gethash id *queries-sems*)
+        (bordeaux-threads-2:wait-on-semaphore (gethash id *queries-sems*)
                                             :timeout timeout)
         (let ((answer (gethash id *queries*)))
           (remhash id *queries*)
@@ -226,7 +226,7 @@ the default answer. (Private)"
              (format t "New connection id - ~A - ~A~%" id connection)
              (websocket-driver:send connection
                                     (format nil "clog['connection_id']='~A'" id))
-             (bordeaux-threads:make-thread
+             (bordeaux-threads-2:make-thread
               (lambda ()
                 (if *break-on-error*
                     (funcall *on-connect-handler* id)
@@ -258,6 +258,7 @@ the default answer. (Private)"
                (websocket-driver:close-connection connection)) ; don't send the reason for better security
               ((equal (first ml) "0")
                ;; a ping
+               (websocket-driver:send connection "Schedule_next_ping()") ; schedule the next ping to properly keep ws open
                (when *verbose-output*
                  (format t "Connection ~A    Ping~%" connection-id)))
               ((equal (first ml) "E")
@@ -268,7 +269,7 @@ the default answer. (Private)"
                  (when *verbose-output*
                    (format t "Connection ~A    Hook = ~A    Data = ~A~%"
                            connection-id event-id data))
-                 (bordeaux-threads:make-thread
+                 (bordeaux-threads-2:make-thread
                   (lambda ()
                     (if *break-on-error*
                         (let* ((event-hash (get-connection-data connection-id))
@@ -300,7 +301,7 @@ the default answer. (Private)"
                            'browser-returned-answer
                            browser-returned-answer))
                  (setf (gethash (parse-integer server-query-id) *queries*) browser-returned-answer)
-                 (bordeaux-threads:signal-semaphore
+                 (bordeaux-threads-2:signal-semaphore
                   (gethash (parse-integer server-query-id) *queries-sems*))))))
     (t (c)
       (format t "Condition caught in handle-message - ~A.~&" c)

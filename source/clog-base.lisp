@@ -38,7 +38,7 @@ See macro with-connection-cache.")
     :initarg :html-id)
    (connection-data-mutex
     :reader connection-data-mutex
-    :initform (bordeaux-threads:make-lock)))
+    :initform (bordeaux-threads-2:make-lock)))
   (:documentation "CLOG objects (clog-obj) encapsulate the connection between
 lisp and an HTML DOM element."))
 
@@ -493,7 +493,7 @@ clog-body of this connection and accessible with CONNECTION-BODY."))
 (defmacro with-sync-event ((clog-obj) &body body)
   "Place at start of event to serialize access to the event. All events in
 an application share per connection the same queue of serialized events."
-  `(bordeaux-threads:with-lock-held (,`(connection-sync ,clog-obj))
+  `(bordeaux-threads-2:with-lock-held (,`(connection-sync ,clog-obj))
      ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -511,7 +511,7 @@ an application share per connection the same queue of serialized events."
   (:documentation "Set connection-data item-name with value."))
 
 (defmethod (setf connection-data-item) (value (obj clog-obj) item-name)
-  (bordeaux-threads:with-lock-held ((connection-data-mutex obj))
+  (bordeaux-threads-2:with-lock-held ((connection-data-mutex obj))
     (ignore-errors
      (setf (gethash item-name (connection-data obj)) value)))
   value)
@@ -520,7 +520,7 @@ an application share per connection the same queue of serialized events."
   (:documentation "Remove item-name from connection-data."))
 
 (defmethod remove-connection-data-item ((obj clog-obj) item-name)
-  (bordeaux-threads:with-lock-held ((connection-data-mutex obj))
+  (bordeaux-threads-2:with-lock-held ((connection-data-mutex obj))
     (ignore-errors
      (remhash item-name (connection-data obj)))))
 
